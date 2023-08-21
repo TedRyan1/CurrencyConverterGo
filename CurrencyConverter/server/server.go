@@ -83,13 +83,18 @@ func saveBidToDB(bid string) error {
     return fmt.Errorf("failed to open the SQLite database: %w", err)
 }
 
-	err = db.PingContext(ctx)
+	_, err = db.Exec(`CREATE TABLE IF NOT EXISTS quotes(id INTEGER PRIMARY KEY, value TEXT)`)
+	if err != nil {
+		panic(fmt.Errorf("failed to create the quotes table: %w", err))
+	}
+
+	 err = db.PingContext(ctx)
      if err != nil {
 	 if ctx.Err() == context.DeadlineExceeded {
 		return fmt.Errorf("request to database timed out after %v milliseconds", databaseTimeout)
 	}
 	return fmt.Errorf("failed to connect to database: %w", err)
-}
+} 
 
     defer db.Close()
 
@@ -103,7 +108,11 @@ func saveBidToDB(bid string) error {
     defer stmt.Close()
 
 	_, err = stmt.ExecContext(ctx, bid)
-	if err != nil {
+
+    if err != nil {
+    if ctx.Err() == context.DeadlineExceeded {
+        return fmt.Errorf("database insert operation timed out after %v milliseconds", databaseTimeout)
+    }
     return fmt.Errorf("failed to execute the insert statement for bid value '%s': %w", bid, err)
 }
     return nil
