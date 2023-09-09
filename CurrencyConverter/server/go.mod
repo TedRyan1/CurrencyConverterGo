@@ -1,4 +1,4 @@
-module github.com/TedRyan1/curso-go/CurrencyConverter/server
+module github.com/TedRyan1/CurrencyConverter/server
 
 go 1.21.0
 
